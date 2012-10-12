@@ -13,17 +13,19 @@ import XMonad
 import Data.Monoid
 import System.Exit
 import XMonad.Config.Xfce
+import XMonad.Layout.Grid
 
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
 
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.EwmhDesktops
+import XMonad.Hooks.FadeInactive
 
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
 --
-myTerminal      = "rxvt"
+myTerminal      = "xfce4-terminal"
 
 -- Whether focus follows the mouse pointer.
 myFocusFollowsMouse :: Bool
@@ -38,7 +40,7 @@ myBorderWidth   = 1
 -- ("right alt"), which does not conflict with emacs keybindings. The
 -- "windows key" is usually mod4Mask.
 --
-myModMask       = mod4Mask
+myModMask       = mod1Mask
 
 -- The mask for the numlock key. Numlock status is "masked" from the
 -- current modifier status, so the keybindings will work with numlock on or
@@ -156,7 +158,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     --
     [((m .|. modm, k), windows $ f i)
         | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_9]
-        , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]]
+        , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]]
     ++
 
     --
@@ -198,7 +200,7 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = avoidStruts (tiled ||| Mirror tiled ||| Full)
+myLayout = avoidStruts (tiled ||| Mirror tiled ||| Full ||| Grid)
   where
      -- default tiling algorithm partitions the screen into two panes
      tiled   = Tall nmaster delta ratio
@@ -228,11 +230,14 @@ myLayout = avoidStruts (tiled ||| Mirror tiled ||| Full)
 -- 'className' and 'resource' are used below.
 --
 myManageHook = composeAll
-    [ className =? "MPlayer"        --> doFloat
-    , className =? "Gimp"           --> doFloat
-    , resource  =? "desktop_window" --> doIgnore
-    , resource  =? "kdesktop"       --> doIgnore 
-    , className =? "Xfce4-panel"    --> doFloat
+    [ className =? "MPlayer"          --> doFloat
+    , className =? "Gimp"             --> doFloat
+    , resource  =? "xfrun4"           --> doFloat
+    , resource  =? "desktop_window"   --> doIgnore
+    , className =? "Xfce4-notifyd"    --> doIgnore
+    , className =? "Wrapper"          --> doFloat
+    , resource  =? "kdesktop"         --> doIgnore 
+    , className =? "Xfce4-panel"      --> doFloat
     , className =? "Xfce-mcs-manager" --> doFloat ]
 
 ------------------------------------------------------------------------
@@ -257,7 +262,9 @@ myEventHook = ewmhDesktopsEventHook
 --
 -- > logHook = dynamicLogDzen
 --
-myLogHook = return ()
+myLogHook :: X ()
+myLogHook = fadeInactiveLogHook fadeAmount
+       where fadeAmount = 0.85
 
 ------------------------------------------------------------------------
 -- Startup hook
@@ -292,7 +299,7 @@ main = xmonad  $ ewmh xfceConfig {
         focusFollowsMouse  = myFocusFollowsMouse,
         borderWidth        = myBorderWidth,
         modMask            = myModMask,
-        numlockMask        = myNumlockMask,
+      --  numlockMask        = myNumlockMask,
         workspaces         = myWorkspaces,
         normalBorderColor  = myNormalBorderColor,
         focusedBorderColor = myFocusedBorderColor,
