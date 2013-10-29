@@ -20,7 +20,7 @@ import qualified Data.Map        as M
 
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.EwmhDesktops
-import XMonad.Hooks.FadeInactive
+--import XMonad.Hooks.FadeInactive
 
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
@@ -158,7 +158,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     --
     [((m .|. modm, k), windows $ f i)
         | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_9]
-        , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]]
+        , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]]
     ++
 
     --
@@ -236,6 +236,7 @@ myManageHook = composeAll
     , resource  =? "desktop_window"   --> doIgnore
     , className =? "Xfce4-notifyd"    --> doIgnore
     , className =? "Wrapper"          --> doFloat
+    , className =? "Orage"            --> doFloat
     , resource  =? "kdesktop"         --> doIgnore 
     , className =? "Xfce4-panel"      --> doFloat
     , className =? "Xfce-mcs-manager" --> doFloat ]
@@ -263,8 +264,8 @@ myEventHook = ewmhDesktopsEventHook
 -- > logHook = dynamicLogDzen
 --
 myLogHook :: X ()
-myLogHook = fadeInactiveLogHook fadeAmount
-       where fadeAmount = 0.85
+myLogHook = return () --fadeInactiveLogHook fadeAmount
+--       where fadeAmount = 0.85
 
 ------------------------------------------------------------------------
 -- Startup hook
